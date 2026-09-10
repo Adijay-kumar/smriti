@@ -1,0 +1,8 @@
+fastapi
+
+sqlalchemy
+
+python-jose
+passlib
+python-multipart
+python-dotenv
