@@ -464,7 +464,143 @@
 //   },
 // });
 
-import React from 'react';
+// import React from 'react';
+// import {
+//   View,
+//   Text,
+//   StyleSheet,
+//   SafeAreaView,
+//   ScrollView,
+//   TouchableOpacity,
+//   Alert,
+// } from 'react-native';
+// import * as Linking from 'expo-linking';
+// import { COLORS, FONTS, RADIUS, SHADOW } from '../../utils/theme';
+
+// interface Props {
+//   route: any;
+//   navigation: any;
+// }
+
+// export default function IDCardScreen({ route }: Props) {
+//   // Hardcoded for demo — swap with real API later
+//   const patient = {
+//     id: 'bd70eed0-989a-4d99-a8dd-5be6cedce063',
+//     name: 'Ravi Kumar',
+//     age: 72,
+//     date_of_birth: '15 March 1952',
+//     language: 'Hindi',
+//     difficulty: 1,
+//     blood_group: 'B+',
+//     location: 'New Delhi, India',
+//     emergency_contact: '+919876543210',
+//     emergency_contact_name: 'Priya (Daughter)',
+//     medical_info: 'Mild cognitive impairment. Hypertension. On daily medication.',
+//   };
+
+//   return (
+//     <SafeAreaView style={styles.safe}>
+//       <ScrollView
+//         contentContainerStyle={styles.scroll}
+//         showsVerticalScrollIndicator={false}
+//       >
+
+//         {/* Header Card */}
+//         <View style={[styles.headerCard, SHADOW.md]}>
+//           <View style={styles.stripe} />
+//           <View style={styles.headerRow}>
+//             <View style={styles.photoBox}>
+//               <Text style={styles.photoPlaceholder}>👴</Text>
+//             </View>
+//             <View style={styles.headerInfo}>
+//               <Text style={styles.nameText}>{patient.name}</Text>
+//               <Text style={styles.idText}>
+//                 ID: SMR-{patient.id.slice(0, 8).toUpperCase()}
+//               </Text>
+//             </View>
+//           </View>
+//         </View>
+
+//         {/* Age / DOB */}
+//         <View style={styles.section}>
+//           <View style={styles.infoRow}>
+//             <Text style={styles.icon}>📅</Text>
+//             <View>
+//               <Text style={styles.label}>Age / Date of Birth</Text>
+//               <Text style={styles.value}>
+//                 {patient.age} years · {patient.date_of_birth}
+//               </Text>
+//             </View>
+//           </View>
+//         </View>
+
+//         {/* Blood Group */}
+//         <View style={styles.section}>
+//           <View style={styles.infoRow}>
+//             <Text style={styles.icon}>💧</Text>
+//             <View>
+//               <Text style={styles.label}>Blood Group</Text>
+//               <Text style={styles.value}>{patient.blood_group}</Text>
+//             </View>
+//           </View>
+//         </View>
+
+//         {/* Location */}
+//         <TouchableOpacity
+//           style={styles.section}
+//           onPress={() =>
+//             Linking.openURL(
+//               `https://www.google.com/maps/search/${encodeURIComponent(patient.location)}`
+//             )
+//           }
+//         >
+//           <View style={styles.infoRow}>
+//             <Text style={styles.icon}>📍</Text>
+//             <View style={{ flex: 1 }}>
+//               <Text style={styles.label}>Home Location</Text>
+//               <Text style={[styles.value, { color: COLORS.primary, textDecorationLine: 'underline' }]}>
+//                 {patient.location}
+//               </Text>
+//             </View>
+//           </View>
+//         </TouchableOpacity>
+
+//         {/* Language */}
+//         <View style={styles.section}>
+//           <View style={styles.infoRow}>
+//             <Text style={styles.icon}>🌐</Text>
+//             <View>
+//               <Text style={styles.label}>Language</Text>
+//               <Text style={styles.value}>{patient.language}</Text>
+//             </View>
+//           </View>
+//         </View>
+
+//         {/* Medical Info */}
+//         <View style={[styles.section, styles.medicalBox]}>
+//           <Text style={styles.medicalTitle}>⚠️ Medical Information</Text>
+//           <Text style={styles.medicalText}>{patient.medical_info}</Text>
+//         </View>
+
+//         {/* Emergency Contact */}
+//         <TouchableOpacity
+//           style={[styles.section, styles.emergencyBox]}
+//           onPress={() => Linking.openURL(`tel:${patient.emergency_contact}`)}
+//         >
+//           <Text style={styles.emergencyText}>
+//             📞 {patient.emergency_contact}
+//           </Text>
+//           <Text style={styles.emergencyName}>
+//             {patient.emergency_contact_name}
+//           </Text>
+//         </TouchableOpacity>
+
+//       </ScrollView>
+//     </SafeAreaView>
+//   );
+// }
+
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -472,31 +608,141 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
   Alert,
 } from 'react-native';
 import * as Linking from 'expo-linking';
+import { getPatient } from '../../utils/storage';
+import { Patient } from '../../utils/mockData';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../../utils/theme';
 
 interface Props {
-  route: any;
+  route: {
+    params?: {
+      patientId?: string;
+    };
+  };
   navigation: any;
 }
 
+function display(value?: string | null): string {
+  return value?.trim() || 'Not provided';
+}
+
 export default function IDCardScreen({ route }: Props) {
-  // Hardcoded for demo — swap with real API later
-  const patient = {
-    id: 'bd70eed0-989a-4d99-a8dd-5be6cedce063',
-    name: 'Ravi Kumar',
-    age: 72,
-    date_of_birth: '15 March 1952',
-    language: 'Hindi',
-    difficulty: 1,
-    blood_group: 'B+',
-    location: 'New Delhi, India',
-    emergency_contact: '+919876543210',
-    emergency_contact_name: 'Priya (Daughter)',
-    medical_info: 'Mild cognitive impairment. Hypertension. On daily medication.',
-  };
+  const patientId = route.params?.patientId;
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadPatient() {
+      setLoading(true);
+      setError(null);
+      setPatient(null);
+
+      if (!patientId) {
+        setError('No patient selected. Go back and sign in again.');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const result = await getPatient(patientId);
+
+        if (!active) return;
+
+        if (!result) {
+          setError(
+            'Could not load your ID card. Check your connection ' +
+            'and try again. If this continues, sign in again.'
+          );
+          return;
+        }
+
+        setPatient(result);
+      } catch {
+        if (active) {
+          setError('Could not load your ID card. Please try again.');
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadPatient();
+
+    return () => {
+      active = false;
+    };
+  }, [patientId, retryCount]);
+
+  async function openLink(url: string, message: string) {
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('Unable to open', message);
+    }
+  }
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 24,
+          }}
+        >
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.value}>Loading your ID card…</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error || !patient) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={{ padding: 24, gap: 16 }}>
+          <Text accessibilityRole="alert" style={styles.value}>
+            {error || 'Patient information is unavailable.'}
+          </Text>
+
+          {patientId ? (
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() => setRetryCount(count => count + 1)}
+              style={[
+                styles.section,
+                {
+                  minHeight: 48,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                },
+              ]}
+            >
+              <Text style={[styles.value, { color: COLORS.primary }]}>
+                Try Again
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const location = patient.location?.trim();
+  const phone = patient.emergency_contact?.trim();
+  const dialNumber = phone?.replace(/[^\d+]/g, '');
+  const canCall = Boolean(dialNumber && /\d/.test(dialNumber));
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -504,14 +750,16 @@ export default function IDCardScreen({ route }: Props) {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-
-        {/* Header Card */}
         <View style={[styles.headerCard, SHADOW.md]}>
           <View style={styles.stripe} />
+
           <View style={styles.headerRow}>
             <View style={styles.photoBox}>
-              <Text style={styles.photoPlaceholder}>👴</Text>
+              <Text style={styles.photoPlaceholder}>
+                {patient.avatar || '👤'}
+              </Text>
             </View>
+
             <View style={styles.headerInfo}>
               <Text style={styles.nameText}>{patient.name}</Text>
               <Text style={styles.idText}>
@@ -521,84 +769,119 @@ export default function IDCardScreen({ route }: Props) {
           </View>
         </View>
 
-        {/* Age / DOB */}
         <View style={styles.section}>
           <View style={styles.infoRow}>
             <Text style={styles.icon}>📅</Text>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.label}>Age / Date of Birth</Text>
               <Text style={styles.value}>
-                {patient.age} years · {patient.date_of_birth}
+                {patient.age} years · {display(patient.date_of_birth)}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Blood Group */}
         <View style={styles.section}>
           <View style={styles.infoRow}>
             <Text style={styles.icon}>💧</Text>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.label}>Blood Group</Text>
-              <Text style={styles.value}>{patient.blood_group}</Text>
+              <Text style={styles.value}>
+                {display(patient.blood_group)}
+              </Text>
             </View>
           </View>
         </View>
 
-        {/* Location */}
         <TouchableOpacity
           style={styles.section}
-          onPress={() =>
-            Linking.openURL(
-              `https://www.google.com/maps/search/${encodeURIComponent(patient.location)}`
-            )
+          disabled={!location}
+          accessibilityRole="link"
+          accessibilityLabel={
+            location ? `Open home location: ${location}` : 'No home location'
           }
+          accessibilityState={{ disabled: !location }}
+          onPress={() => {
+            if (!location) return;
+
+            void openLink(
+              'https://www.google.com/maps/search/?api=1&query=' +
+                encodeURIComponent(location),
+              'Could not open Maps. Your home location is shown on the card.'
+            );
+          }}
         >
           <View style={styles.infoRow}>
             <Text style={styles.icon}>📍</Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>Home Location</Text>
-              <Text style={[styles.value, { color: COLORS.primary, textDecorationLine: 'underline' }]}>
-                {patient.location}
+              <Text
+                style={[
+                  styles.value,
+                  location
+                    ? {
+                        color: COLORS.primary,
+                        textDecorationLine: 'underline',
+                      }
+                    : undefined,
+                ]}
+              >
+                {display(location)}
               </Text>
             </View>
           </View>
         </TouchableOpacity>
 
-        {/* Language */}
         <View style={styles.section}>
           <View style={styles.infoRow}>
             <Text style={styles.icon}>🌐</Text>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.label}>Language</Text>
-              <Text style={styles.value}>{patient.language}</Text>
+              <Text style={styles.value}>
+                {display(patient.language)}
+              </Text>
             </View>
           </View>
         </View>
 
-        {/* Medical Info */}
         <View style={[styles.section, styles.medicalBox]}>
-          <Text style={styles.medicalTitle}>⚠️ Medical Information</Text>
-          <Text style={styles.medicalText}>{patient.medical_info}</Text>
+          <Text style={styles.medicalTitle}>
+            ⚠️ Medical Information
+          </Text>
+          <Text style={styles.medicalText}>
+            {display(patient.medical_info)}
+          </Text>
         </View>
 
-        {/* Emergency Contact */}
         <TouchableOpacity
           style={[styles.section, styles.emergencyBox]}
-          onPress={() => Linking.openURL(`tel:${patient.emergency_contact}`)}
+          disabled={!canCall}
+          accessibilityRole="button"
+          accessibilityLabel={
+            canCall ? `Call emergency contact ${phone}` : 'No emergency phone'
+          }
+          accessibilityState={{ disabled: !canCall }}
+          onPress={() => {
+            if (!canCall || !dialNumber) return;
+
+            void openLink(
+              `tel:${dialNumber}`,
+              'Could not open the dialer. Please call the number shown.'
+            );
+          }}
         >
           <Text style={styles.emergencyText}>
-            📞 {patient.emergency_contact}
+            📞 {display(phone)}
           </Text>
           <Text style={styles.emergencyName}>
-            {patient.emergency_contact_name}
+            {display(patient.emergency_contact_name)}
           </Text>
         </TouchableOpacity>
-
       </ScrollView>
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   safe: {

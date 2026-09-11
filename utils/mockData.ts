@@ -3,9 +3,19 @@ export interface Patient {
   name: string;
   age: number;
   language: string;
-  difficulty: 1 | 2 | 3; // 1=Easy, 2=Medium, 3=Hard
-  caregiverId: string;
-  avatar: string;
+  difficulty: 1 | 2 | 3;
+
+  caregiver_id?: string;
+  caregiverId?: string;
+  avatar?: string;
+
+  date_of_birth?: string | null;
+  photo_url?: string | null;
+  location?: string | null;
+  blood_group?: string | null;
+  emergency_contact?: string | null;
+  emergency_contact_name?: string | null;
+  medical_info?: string | null;
 }
 
 export interface GameSession {
