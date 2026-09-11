@@ -7,6 +7,8 @@ import { getPatients, getSessions } from '../../utils/storage';
 import { getPatientStats } from '../../utils/adaptive';
 import { Patient, GameSession } from '../../utils/mockData';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../../utils/theme';
+import { api } from '../../utils/api';
+
 
 interface Props { 
   navigation: any;
@@ -20,26 +22,71 @@ interface PatientWithStats extends Patient {
 // TO
 export default function CaregiverHomeScreen({ navigation, route }: Props) {
   const [patients, setPatients] = useState<PatientWithStats[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const caregiverId = route?.params?.caregiverId;
+const [refreshing, setRefreshing] = useState(false);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+const caregiverId = route?.params?.caregiverId;
+
+const load = useCallback(async () => {
+  setLoading(true);
+  setError(null);
+  console.warn('Function check:', {
+  getPatients: typeof getPatients,
+  apiGetPatients: typeof api.getPatients,
+  getSessions: typeof getSessions,
+  getPatientStats: typeof getPatientStats,
+});
+
+
+  try {
     if (!caregiverId) {
-      console.warn('No caregiverId');
-      return;
+      throw new Error('Missing caregiver ID. Please sign in again.');
     }
+
     const pts = await getPatients(caregiverId);
-    const all = await getSessions();
-    const enriched = pts.map(p => ({
-      ...p,
-      stats: getPatientStats(all.filter(s => s.patientId === p.id)),
+    const sessions = await getSessions();
+
+    const enriched: PatientWithStats[] = pts.map(patient => ({
+      ...patient,
+      stats: getPatientStats(
+        sessions.filter(session => session.patientId === patient.id)
+      ),
     }));
+
     setPatients(enriched);
-  }, [caregiverId]);
+  } catch (err) {
+    setPatients([]);
 
-  useEffect(() => { load(); }, []);
+    const message =
+      err instanceof Error
+        ? err.message
+        : 'Could not load patients. Please try again.';
 
-  const onRefresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
+    setError(message);
+    console.warn(
+  'ORIGINAL PATIENT ERROR:',
+  err instanceof Error ? err.stack : String(err)
+);
+
+  } finally {
+    setLoading(false);
+  }
+}, [caregiverId]);
+
+useEffect(() => {
+  void load();
+}, [load]);
+
+const onRefresh = async () => {
+  setRefreshing(true);
+
+  try {
+    await load();
+  } finally {
+    setRefreshing(false);
+  }
+};
 
   const diffColor = (d: number) => d === 1 ? '#27AE60' : d === 2 ? COLORS.accent : COLORS.danger;
   const diffLabel = (d: number) => ['', 'Easy', 'Medium', 'Hard'][d];
@@ -52,13 +99,19 @@ export default function CaregiverHomeScreen({ navigation, route }: Props) {
       >
 
         {/* Header */}
-        <View style={styles.header}>
+        <View style={styles.headerAction}>
           <View>
             <Text style={styles.title}>My Patients</Text>
             <Text style={styles.sub}>{patients.length} patients</Text>
           </View>
-          <Text style={styles.headerIcon}>👩‍⚕️</Text>
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => navigation.navigate('AddPatient', { caregiverId })}
+          >
+            <Text style={styles.addBtnText}>+ Add</Text>
+          </TouchableOpacity>
         </View>
+        
 
         {/* Summary chips */}
         <View style={styles.chips}>
@@ -73,6 +126,30 @@ export default function CaregiverHomeScreen({ navigation, route }: Props) {
             </Text>
           </View>
         </View>
+        {loading ? (
+  <Text style={styles.sub}>Loading patients…</Text>
+) : error ? (
+  <View>
+    <Text accessibilityRole="alert" style={styles.sub}>
+      {error}
+    </Text>
+
+    <TouchableOpacity
+      accessibilityRole="button"
+      onPress={() => void load()}
+      style={{ paddingVertical: 16 }}
+    >
+      <Text style={{ color: COLORS.primary, fontWeight: '700' }}>
+        Try Again
+      </Text>
+    </TouchableOpacity>
+  </View>
+) : patients.length === 0 ? (
+  <Text style={styles.sub}>
+    No patients are linked to this caregiver account.
+  </Text>
+) : null}
+
 
         {/* Patient cards */}
         {patients.map(p => (
@@ -143,6 +220,9 @@ const styles = StyleSheet.create({
   chips: { flexDirection: 'row', gap: 10 },
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: RADIUS.full },
   chipText: { fontSize: FONTS.sm, fontWeight: '700' },
+  headerAction: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  addBtn: { backgroundColor: COLORS.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.full },
+  addBtnText: { color: '#fff', fontSize: FONTS.sm, fontWeight: '700' },
   patientCard: {
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.xl,

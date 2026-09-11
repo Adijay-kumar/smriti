@@ -24,23 +24,59 @@ export const api = {
 // getPatient: (patientId: string) =>
 //   fetch(`${BASE_URL}/patients/${patientId}`)
 //     .then(r => r.json()),
-getPatient: async (patientId: string) => {
+// getPatient: async (patientId: string) => {
+//   const raw = await AsyncStorage.getItem('smriti_current_user');
+//   const user = raw ? JSON.parse(raw) : null;
+//   const token = user?.access_token;
+
+//   const response = await fetch(`${BASE_URL}/patients/${patientId}`, {
+//     headers: {
+//       'Authorization': `Bearer ${token}`,
+//       'Content-Type': 'application/json',
+//     },
+//   });
+
+//   console.log('GET PATIENT STATUS:', response.status);
+//   const data = await response.json();
+//   console.log('GET PATIENT RESPONSE:', data);
+//   return data;
+// },
+getPatients: async (caregiverId: string) => {
+  if (!caregiverId?.trim()) {
+    throw new Error('Missing caregiver ID. Please sign in again.');
+  }
+
   const raw = await AsyncStorage.getItem('smriti_current_user');
   const user = raw ? JSON.parse(raw) : null;
-  const token = user?.access_token;
 
-  const response = await fetch(`${BASE_URL}/patients/${patientId}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+  if (!user?.access_token) {
+    throw new Error('Please sign in again.');
+  }
 
-  console.log('GET PATIENT STATUS:', response.status);
+  const response = await fetch(
+    `${BASE_URL}/patients/?caregiver_id=${encodeURIComponent(caregiverId)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${user.access_token}`,
+        Accept: 'application/json',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Could not load patients (${response.status}).`);
+  }
+
   const data = await response.json();
-  console.log('GET PATIENT RESPONSE:', data);
+
+  if (!Array.isArray(data)) {
+    throw new Error('Invalid patient list response.');
+  }
+
   return data;
 },
+
+
   // ADD:
   register: (name: string, email: string, password: string, role: string) =>
     fetch(`${BASE_URL}/auth/register`, {

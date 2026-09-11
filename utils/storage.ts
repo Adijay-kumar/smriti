@@ -223,6 +223,11 @@ export async function initStorage() {
 //     return null;
 //   }
 // }
+export async function getPatients(
+  caregiverId: string
+): Promise<Patient[]> {
+  return await api.getPatients(caregiverId);
+}
 
 export async function getPatient(
   id: string
@@ -339,3 +344,4 @@ export async function getRecentSessions(
         new Date(a.date).getTime()
     );
 }
+
