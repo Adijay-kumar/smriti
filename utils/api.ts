@@ -97,13 +97,36 @@ export const api = {
       body: JSON.stringify({ caregiver_id: caregiverId, ...data }),
     }).then(r => r.json()),
 
-  saveSession: (session: object) =>
-    fetch(`${BASE_URL}/sessions/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(session),
-    }).then(r => r.json()),
-
+//   saveSession: async (session: object) => {
+//   const raw = await AsyncStorage.getItem('smriti_current_user');
+//   const user = raw ? JSON.parse(raw) : null;
+//   const token = user?.access_token;
+//   const response = await fetch(`${BASE_URL}/sessions/`, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: `Bearer ${token}`,
+//     },
+//     body: JSON.stringify(session),
+//   });
+//   return response.json();
+// },
+saveSession: async (session: object) => {
+  const raw = await AsyncStorage.getItem('smriti_current_user');
+  const user = raw ? JSON.parse(raw) : null;
+  const token = user?.access_token;
+  const response = await fetch(`${BASE_URL}/sessions/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(session),
+  });
+  const text = await response.text();       // ← raw text first
+  console.log('SESSION RESPONSE:', text);   // ← log it
+  return JSON.parse(text);                  // ← then parse
+},
   getVoiceNotes: (patientId: string) =>
     fetch(`${BASE_URL}/voice-notes/?patient_id=${patientId}`).then(r => r.json()),
 };

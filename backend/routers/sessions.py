@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import date, datetime, timedelta
 from typing import List, Optional
 import uuid
@@ -41,6 +41,11 @@ class SessionResponse(BaseModel):
     time_taken:         float
     difficulty:         int
     completed:          bool
+
+    @field_validator("id", "patient_id", mode="before")
+    @classmethod
+    def convert_uuid_to_str(cls, v):
+        return str(v) if v else v
 
     class Config:
         from_attributes = True

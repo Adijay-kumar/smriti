@@ -125,7 +125,7 @@ export default function GameScreen({ navigation, route }: Props) {
             `Accuracy: ${accuracy}%\n` +
             `Matched: ${matched}/${totalPairs} pairs\n` +
             `Time: ${Math.round(totalTime)}s\n\n` +
-            `${result.adaptation.reason}`,
+            `Great job! Keep it up! 💪`,
             [{ text: 'Back Home', onPress: () => navigation.goBack() }]
         );
     } catch (e) {
