@@ -8,25 +8,34 @@ import { getPatientStats } from '../../utils/adaptive';
 import { Patient, GameSession } from '../../utils/mockData';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../../utils/theme';
 
-interface Props { navigation: any; }
+interface Props { 
+  navigation: any;
+  route?: { params?: { caregiverId?: string } };
+}
 
 interface PatientWithStats extends Patient {
   stats: ReturnType<typeof getPatientStats>;
 }
 
-export default function CaregiverHomeScreen({ navigation }: Props) {
+// TO
+export default function CaregiverHomeScreen({ navigation, route }: Props) {
   const [patients, setPatients] = useState<PatientWithStats[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const caregiverId = route?.params?.caregiverId;
 
   const load = useCallback(async () => {
-    const pts = await getPatients();
+    if (!caregiverId) {
+      console.warn('No caregiverId');
+      return;
+    }
+    const pts = await getPatients(caregiverId);
     const all = await getSessions();
     const enriched = pts.map(p => ({
       ...p,
       stats: getPatientStats(all.filter(s => s.patientId === p.id)),
     }));
     setPatients(enriched);
-  }, []);
+  }, [caregiverId]);
 
   useEffect(() => { load(); }, []);
 
@@ -46,7 +55,7 @@ export default function CaregiverHomeScreen({ navigation }: Props) {
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>My Patients</Text>
-            <Text style={styles.sub}>Dr. Priya Nair · {patients.length} patients</Text>
+            <Text style={styles.sub}>{patients.length} patients</Text>
           </View>
           <Text style={styles.headerIcon}>👩‍⚕️</Text>
         </View>

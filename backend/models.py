@@ -37,9 +37,16 @@ class Patient(Base):
     caregiver_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     name         = Column(String,  nullable=False)
     age          = Column(Integer)
+    date_of_birth = Column(Date, nullable=True)  # ADD THIS
     language     = Column(String,  default="English")
     difficulty   = Column(Integer, default=1)               # 1=Easy 2=Medium 3=Hard
-    avatar       = Column(String,  default="👴")
+    # avatar       = Column(String,  default="👴")
+    photo_url    = Column(String,  nullable=True)  # ADD THIS — store image URL/path
+    location     = Column(String,  nullable=True)  # ADD THIS — "City, State" or place name
+    blood_group  = Column(String,  nullable=True)  # ADD THIS
+    emergency_contact = Column(String, nullable=True)  # ADD THIS
+    emergency_contact_name = Column(String, nullable=True)  # ADD THIS
+    medical_info = Column(String, nullable=True)  # ADD THIS — JSON string with diagnosis, meds, allergies, conditions
     created_at   = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
@@ -50,20 +57,19 @@ class Patient(Base):
 
 
 class GameSession(Base):
-    """
-    One row per game played.
-    Stores accuracy, speed, score — the adaptive engine reads these.
-    """
     __tablename__ = "game_sessions"
 
     id                = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     patient_id        = Column(UUID(as_uuid=True), ForeignKey("patients.id"), nullable=False)
     session_date      = Column(Date, nullable=False)
-    accuracy          = Column(Integer)       # 0-100
-    avg_response_time = Column(Float)         # seconds
+    accuracy          = Column(Integer)
+    avg_response_time = Column(Float)
     score             = Column(Integer)
     attempts          = Column(Integer)
-    difficulty        = Column(Integer)       # difficulty AT TIME of session
+    correct_matches   = Column(Integer, default=0)   # ← NEW
+    total_pairs       = Column(Integer, default=4)   # ← NEW
+    time_taken        = Column(Float,   default=0)   # ← NEW total seconds
+    difficulty        = Column(Integer)
     completed         = Column(Boolean, default=True)
 
     patient = relationship("Patient", back_populates="sessions")

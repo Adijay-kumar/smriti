@@ -83,7 +83,7 @@ async def create_voice_note(
 
     # 3. Build a URL the app can use to fetch the file later
     #    This assumes your server is running at SERVER_URL
-    server_url = os.getenv("SERVER_URL", "http://192.168.1.100:8000")
+    server_url = os.getenv("SERVER_URL", "http://192.168.1.11:8000")
     file_url   = f"{server_url}/voice-notes/file/{filename}"
 
     # 4. Save metadata to DB

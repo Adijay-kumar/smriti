@@ -33,6 +33,7 @@ export default function PatientHomeScreen({ navigation, route }: Props) {
       { text: 'Cancel' },
     ]);
 
+    
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -40,7 +41,9 @@ export default function PatientHomeScreen({ navigation, route }: Props) {
         {/* Greeting card */}
         <View style={[styles.greetCard, SHADOW.md]}>
           <Text style={styles.avatar}>{patient?.avatar ?? '👴'}</Text>
-          <Text style={styles.greeting}>{greeting}, {patient?.name?.split(' ')[0] ?? 'Ravi'} 👋</Text>
+          <Text style={styles.greeting}>
+            {greeting}, {patient?.name?.split(' ')[0] ?? 'there'} 👋
+          </Text>
           <Text style={styles.date}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}</Text>
         </View>
 
@@ -82,6 +85,17 @@ export default function PatientHomeScreen({ navigation, route }: Props) {
             </View>
           ))}
         </View>
+        <View style={styles.row}>
+  <BigButton
+    label="My ID Card"
+    icon="🪪"
+    variant="outline"
+    style={{ flex: 1 }}
+    onPress={() =>
+      navigation.navigate('IDCard', { patientId })
+    }
+  />
+</View>
 
         {/* SOS */}
         <BigButton

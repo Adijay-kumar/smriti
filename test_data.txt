@@ -1,0 +1,41 @@
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNTZjYjRjZi1iMzlmLTQ0ZTUtOGI0Yy00ZmZhOGYwYmQwYWIiLCJyb2xlIjoiY2FyZWdpdmVyIiwiZXhwIjoxNzg5NDUwOTQyfQ.F9nTx_3hnZ0XXvOYM-9m2L3bUW4PGguO4d_61GzRw1A",
+  "token_type": "bearer",
+  "user_id": "356cb4cf-b39f-44e5-8b4c-4ffa8f0bd0ab",
+  "name": "Dr. Priya Nair",
+  "role": "caregiver",
+  "patient_id": null
+}
+
+{
+  "email": "priya@smriti.app",
+  "password": "demo1234"
+}
+
+{
+  "id": "a66936b9-af61-4168-9398-9174322a0456",
+  "caregiver_id": "356cb4cf-b39f-44e5-8b4c-4ffa8f0bd0ab",
+  "name": "Ravi Sharma",
+  "age": 72,
+  "language": "Hindi",
+  "difficulty": 1,
+  "avatar": "👴"
+}
+
+// new caregiver raj
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjYjE3MzBlZi05NzZmLTRjNGEtOTQwNS1jZjA0M2VmNGFhZGQiLCJyb2xlIjoiY2FyZWdpdmVyIiwiZXhwIjoxNzg5NjIxNTUwfQ.O_cWeX0SX3MVwX3yx5SpVLFVl2RPVApZQyHpdc4jrec",
+  "token_type": "bearer",
+  "user_id": "cb1730ef-976f-4c4a-9405-cf043ef4aadd",
+  "name": "Raj",
+  "role": "caregiver",
+  "patient_id": null
+}
+
+// new
+{
+  "name": "Dr.Oggy",
+  "email": "oggy@gmail.com",
+  "password": "olivia",
+  "role": "caregiver"
+}
