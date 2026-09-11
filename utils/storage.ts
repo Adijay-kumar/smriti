@@ -232,6 +232,7 @@ export async function getPatients(
 export async function getPatient(
   id: string
 ): Promise<Patient | null> {
+  console.warn('api.getPatient type:', typeof api.getPatient); // ADD THIS
   try {
     return await api.getPatient(id);
   } catch (error) {

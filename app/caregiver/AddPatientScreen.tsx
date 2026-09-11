@@ -17,11 +17,16 @@ export default function AddPatientScreen({ navigation, route }: Props) {
   const [age, setAge] = useState('');
   const [language, setLanguage] = useState('English');
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   async function handleAdd() {
-    if (!name.trim() || !age.trim()) {
-      Alert.alert('Missing fields', 'Name and age required');
-      return;
+    if (!name.trim() || !age.trim() || !email.trim() || !password.trim()) {
+    Alert.alert(
+        'Missing fields',
+        'Name, age, email and password are required'
+    );
+    return;
     }
 
     setLoading(true);
@@ -29,13 +34,19 @@ export default function AddPatientScreen({ navigation, route }: Props) {
       const res = await api.createPatient(route.params.caregiverId, {
         name: name.trim(),
         age: parseInt(age),
+        email: email.trim(),
+        password,
         language,
-      });
-
+        });
       if (res.detail || res.error) {
-        Alert.alert('Error', res.detail || res.error);
-        return;
-      }
+  const msg = res.detail
+    ? (Array.isArray(res.detail)
+        ? res.detail.map((e: any) => e.msg).join('\n')
+        : res.detail)
+    : res.error;
+  Alert.alert('Error', msg);
+  return;
+}
 
       Alert.alert('Success', 'Patient added');
       navigation.goBack();
@@ -65,6 +76,22 @@ export default function AddPatientScreen({ navigation, route }: Props) {
           keyboardType="number-pad"
           value={age}
           onChangeText={setAge}
+        />
+        <TextInput
+        style={styles.input}
+        placeholder="Patient email"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
+        />
+
+        <TextInput
+        style={styles.input}
+        placeholder="Patient password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
         />
 
         <Text style={styles.label}>Language</Text>

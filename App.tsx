@@ -11,6 +11,8 @@ import CaregiverHomeScreen from './app/caregiver/CaregiverHomeScreen';
 import AnalysisScreen from './app/caregiver/AnalysisScreen';
 import { COLORS } from './utils/theme';
 import IDCardScreen from './app/patient/IDCardScreen';
+// Add to imports at top
+import AddPatientScreen from './app/caregiver/AddPatientScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -77,6 +79,11 @@ export default function App() {
           name="Analysis"
           component={AnalysisScreen}
           options={{ title: 'Patient Analysis 📊' }}
+        />
+        <Stack.Screen
+          name="AddPatient"
+          component={AddPatientScreen}
+          options={{ title: 'Add Patient ➕' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
